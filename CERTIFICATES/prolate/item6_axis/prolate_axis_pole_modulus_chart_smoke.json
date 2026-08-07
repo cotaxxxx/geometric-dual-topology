@@ -1,0 +1,78 @@
+{
+  "status": "PASSED",
+  "failure_count": 0,
+  "boxes": [
+    {
+      "chart": "endpoint",
+      "t": [
+        "130945/131072",
+        "1"
+      ],
+      "u": [
+        "0",
+        "1/65536"
+      ],
+      "lambda": [
+        "1",
+        "17/16"
+      ],
+      "value": "[+/- 0.0207]",
+      "finite": true,
+      "imag_contains_zero": true
+    },
+    {
+      "chart": "endpoint",
+      "t": [
+        "65409/65536",
+        "1"
+      ],
+      "u": [
+        "0",
+        "1/32768"
+      ],
+      "lambda": [
+        "555/16",
+        "35"
+      ],
+      "value": "[+/- 0.0152]",
+      "finite": true,
+      "imag_contains_zero": true
+    },
+    {
+      "chart": "junction",
+      "t": [
+        "1/128",
+        "639/65536"
+      ],
+      "u": [
+        "3/8192",
+        "7/16384"
+      ],
+      "lambda": [
+        "4435/64",
+        "2225/32"
+      ],
+      "value": "[+/- 3.20e+3]",
+      "finite": true,
+      "imag_contains_zero": true
+    },
+    {
+      "chart": "junction",
+      "t": [
+        "1/128",
+        "639/65536"
+      ],
+      "u": [
+        "1/4096",
+        "5/16384"
+      ],
+      "lambda": [
+        "2465/32",
+        "4945/64"
+      ],
+      "value": "[+/- 7.22e+3]",
+      "finite": true,
+      "imag_contains_zero": true
+    }
+  ]
+}

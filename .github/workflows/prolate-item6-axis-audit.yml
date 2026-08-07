@@ -1,0 +1,136 @@
+name: Prolate item 6 axial formula audit
+
+on:
+  pull_request:
+    paths:
+      - "CERTIFICATES/prolate/item6_axis/**"
+      - "01_GENERAL_THEORY/CERTIFICATION_ARCHITECTURE.md"
+      - ".github/workflows/prolate-item6-axis-audit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-axis-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install audit environment
+        run: python -m pip install sympy==1.14.0 mpmath==1.3.0
+      - name: Run exact symbolic audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_symbolic_audit.py
+      - name: Run exact signed-angle audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_angle_symbolic_audit.py
+      - name: Run exact center Hessian audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_center_symbolic_audit.py
+      - name: Run exact center-cap kernel audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_center_cap_symbolic_audit.py
+      - name: Run exact tail coefficient audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_symbolic_audit.py
+      - name: Run exact tail second-coefficient audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_second_coefficient_symbolic_audit.py
+      - name: Run exact signed-angle tail audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_tail_symbolic_audit.py
+      - name: Run regularized tail-kernel audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_regularized_symbolic_audit.py
+      - name: Run tail log-derivative audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_log_derivative_symbolic_audit.py
+      - name: Run pole-boundary symbolic audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_pole_boundary_symbolic_audit.py
+      - name: Run tail pole-boundary normalization audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_pole_boundary_symbolic_audit.py
+      - name: Run pole second-boundary symbolic audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_pole_second_boundary_symbolic_audit.py
+      - name: Run pole modulus symbolic audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_pole_modulus_symbolic_audit.py
+      - name: Run non-certified reference scout
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_reference.py --dps 50
+      - name: Run non-certified center Hessian scout
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_center_reference.py --dps 40
+      - name: Run non-certified tail regression audit
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_reference.py --dps 40
+      - name: Compile Python sources
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python -m py_compile
+          prolate_axis_symbolic_audit.py
+          prolate_axis_signed_angle_symbolic_audit.py
+          prolate_axis_center_symbolic_audit.py
+          prolate_axis_center_cap_symbolic_audit.py
+          prolate_axis_tail_symbolic_audit.py
+          prolate_axis_tail_second_coefficient_symbolic_audit.py
+          prolate_axis_signed_tail_symbolic_audit.py
+          prolate_axis_tail_regularized_symbolic_audit.py
+          prolate_axis_tail_log_derivative_symbolic_audit.py
+          prolate_axis_pole_boundary_symbolic_audit.py
+          prolate_axis_tail_pole_boundary_symbolic_audit.py
+          prolate_axis_pole_second_boundary_symbolic_audit.py
+          prolate_axis_pole_modulus_symbolic_audit.py
+          prolate_axis_reference.py
+          prolate_axis_center_reference.py
+          prolate_axis_tail_reference.py
+          prolate_axis_tail_remainder_reference.py
+          prolate_axis_center_compact_arb.py
+          prolate_axis_center_cap_arb.py
+          prolate_axis_center_cap_block_arb.py
+          prolate_axis_center_cap_combine.py
+          prolate_axis_interior_block_arb.py
+          prolate_axis_interior_combine.py
+          prolate_axis_pole_boundary_block_arb.py
+          prolate_axis_pole_boundary_combine.py
+          prolate_axis_pole_transfer_block_arb.py
+          prolate_axis_pole_transfer_combine.py
+          prolate_axis_tail_H_block_arb.py
+          prolate_axis_tail_H_scaled_block_arb.py
+          prolate_axis_tail_H_combine.py
+          prolate_axis_tail_M_scaled_block_arb.py
+          prolate_axis_signed_tail_block_arb.py
+          prolate_axis_pole_second_boundary_block_arb.py
+          prolate_axis_pole_second_boundary_combine.py
+          prolate_axis_second_rectangle_arb.py
+          prolate_axis_signed_rectangle_arb.py
+          prolate_axis_grid_combine.py
+          prolate_axis_pole_modulus_arb.py
+      - name: Upload audit outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-axis-audit
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_angle_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_center_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_center_cap_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_second_coefficient_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_tail_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_regularized_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_log_derivative_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_boundary_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_pole_boundary_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_second_boundary_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_reference.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_center_reference.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_reference.json

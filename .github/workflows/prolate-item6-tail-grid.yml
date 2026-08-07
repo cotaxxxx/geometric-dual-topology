@@ -1,0 +1,163 @@
+name: Prolate item 6 regularized tail interface grid
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-tail-grid-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - id: build
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+
+          w_bands = [
+              (1, 20, 1, 8), (1, 8, 1, 4), (1, 4, 3, 8),
+              (3, 8, 1, 2), (1, 2, 5, 8), (5, 8, 3, 4),
+          ]
+          mu_bands = {
+              "H": [(1, 200, 3, 400), (3, 400, 1, 100)],
+              "M": [(1, 400, 3, 800), (3, 800, 1, 200)],
+          }
+          rows = []
+          for quantity, slabs in mu_bands.items():
+              for ml_num, ml_den, mh_num, mh_den in slabs:
+                  for wl_num, wl_den, wh_num, wh_den in w_bands:
+                      rows.append({
+                          "name": (
+                              f"{quantity}-m{ml_num}_{ml_den}-{mh_num}_{mh_den}-"
+                              f"w{wl_num}_{wl_den}-{wh_num}_{wh_den}"
+                          ),
+                          "quantity": quantity,
+                          "mu_lo_num": ml_num,
+                          "mu_lo_den": ml_den,
+                          "mu_hi_num": mh_num,
+                          "mu_hi_den": mh_den,
+                          "w_lo_num": wl_num,
+                          "w_lo_den": wl_den,
+                          "w_hi_num": wh_num,
+                          "w_hi_den": wh_den,
+                      })
+          print("matrix=" + json.dumps({"include": rows}, separators=(",", ":")))
+          PY
+
+  tail-block:
+    name: tail-${{ matrix.name }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install audit and validated arithmetic
+        run: python -m pip install sympy==1.14.0 python-flint==0.9.0
+      - name: Verify independent signed-angle tail identities
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_tail_symbolic_audit.py
+      - name: Verify cancellation-regularized H kernel
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_regularized_symbolic_audit.py
+      - name: Verify exact M log-derivative kernel
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_tail_log_derivative_symbolic_audit.py
+      - name: Certify regularized tail rectangle
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          OUT="prolate_axis_tail_grid_${{ matrix.quantity }}_${{ matrix.name }}.json"
+          if [[ "${{ matrix.quantity }}" == "H" ]]; then
+            SCRIPT=prolate_axis_tail_H_scaled_block_arb.py
+          else
+            SCRIPT=prolate_axis_tail_M_scaled_block_arb.py
+          fi
+          python "$SCRIPT" \
+            --dps 45 \
+            --tolerance 1e-16 \
+            --integration-depth 20 \
+            --eval-limit 100000 \
+            --max-split-depth 16 \
+            --max-boxes 32768 \
+            --mu-lo-num ${{ matrix.mu_lo_num }} \
+            --mu-lo-den ${{ matrix.mu_lo_den }} \
+            --mu-hi-num ${{ matrix.mu_hi_num }} \
+            --mu-hi-den ${{ matrix.mu_hi_den }} \
+            --w-lo-num ${{ matrix.w_lo_num }} \
+            --w-lo-den ${{ matrix.w_lo_den }} \
+            --w-hi-num ${{ matrix.w_hi_num }} \
+            --w-hi-den ${{ matrix.w_hi_den }} \
+            --json "$OUT"
+      - name: Upload regularized tail rectangle certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-grid-${{ matrix.quantity }}-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_tail_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_regularized_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_log_derivative_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_grid_${{ matrix.quantity }}_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_grid_${{ matrix.quantity }}_${{ matrix.name }}.json.sha256
+
+  combine:
+    name: regularized-tail-grid-combine
+    needs: tail-block
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download all regularized tail rectangle certificates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-tail-grid-*
+          path: CERTIFICATES/prolate/item6_axis/tail_grid_outputs
+          merge-multiple: true
+      - name: Combine positive H interface
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_grid_combine.py
+          --pattern "tail_grid_outputs/prolate_axis_tail_grid_H_*.json"
+          --x-key mu --y-key w
+          --value-key H --sign positive
+          --x-lo 1/200 --x-hi 1/100
+          --y-lo 1/20 --y-hi 3/4
+          --expected-blocks 12
+          --json prolate_axis_tail_H_grid_mu_1_200_1_100.json
+      - name: Combine positive M transfer slab
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_grid_combine.py
+          --pattern "tail_grid_outputs/prolate_axis_tail_grid_M_*.json"
+          --x-key mu --y-key w
+          --value-key M --sign positive
+          --x-lo 1/400 --x-hi 1/200
+          --y-lo 1/20 --y-hi 3/4
+          --expected-blocks 12
+          --json prolate_axis_tail_M_grid_mu_1_400_1_200.json
+      - name: Upload combined regularized tail certificates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-grid-combined
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_grid_mu_1_200_1_100.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_grid_mu_1_200_1_100.json.sha256
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_M_grid_mu_1_400_1_200.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_M_grid_mu_1_400_1_200.json.sha256

@@ -1,0 +1,353 @@
+{
+  "status": "CERTIFIED",
+  "certified_statement": "|A_lambda''(w)| is bounded by the certified four-region weighted constant on 1<=lambda<=100, 63/64<=w<1, and Psi_lambda(1-u)>0 for 0<=u<=2^-24 using Phi>=43/5000.",
+  "constants": {
+    "u_max": "1/64",
+    "t_split": "1/128",
+    "junction_split": "1/64",
+    "endpoint_split": "255/256",
+    "boundary_floor": "43/5000",
+    "dyadic_exponent": 24,
+    "epsilon": "1/16777216",
+    "absolute_safe_ceiling": "90177536/625",
+    "inner_density_bound": "[7.0226482176879782499251090923866396423372845794733 +/- 4.68e-50]",
+    "outer_near_density_bound": "[139085.32156101032823229814945402151079282411660172 +/- 4.54e-45]",
+    "residual_uniform_far_ceiling": "[144317.91458478051661851741288647364566403902922025 +/- 3.84e-45]",
+    "outer_far_acceptance_limit": "[144317.91458478051661851741288647364566403902922025 +/- 6.43e-46]",
+    "junction_density_bound": "[142571.62240051379073027342926034431545434687801515 +/- 2.66e-45]",
+    "middle_density_bound": "[144311.48783467518071315177903456029566035893048480 +/- 3.17e-45]",
+    "endpoint_density_bound": "[5.3406720183296976515360750799885572613717664055493 +/- 9.83e-51]",
+    "A_second_weighted_bound": "[143700.39247282134784787450023088319074824270803725 +/- 8.47e-45]",
+    "remaining_absolute_margin": "[583.66512717865215212549976911680925175729196275 +/- 8.85e-45]",
+    "modulus_loss": "[0.008565210847426733246318966164045524045720261814431 +/- 6.00e-52]"
+  },
+  "conditions": {
+    "endpoint and factorization exact audit passed": true,
+    "exact outer split audit passed": true,
+    "inner compact density cover certified": true,
+    "outer near compact density cover certified": true,
+    "outer junction signed cover certified": true,
+    "outer middle factored cover certified": true,
+    "outer endpoint signed cover certified": true,
+    "all outer slab bounds are below residual uniform ceiling": true,
+    "weighted total is below absolute safe ceiling": true,
+    "modulus loss at 2^-24 is below boundary floor": true
+  },
+  "split_exact_audit": {
+    "status": "PASSED",
+    "checks": {
+      "junction begins at outer-near endpoint": true,
+      "junction and middle meet exactly": true,
+      "middle and endpoint meet exactly": true,
+      "outer slab widths sum to one minus t_split": true,
+      "signed junction N has positive exact lower bound": true
+    }
+  },
+  "regions": [
+    {
+      "name": "inner d=u^2*y^2",
+      "status": "CERTIFIED",
+      "requested_absolute_bound": "100.00000000000000000000000000000000000000000000000",
+      "conditions": {
+        "at least one accepted density box": true,
+        "accepted boxes satisfy the requested absolute bound": true,
+        "exact rational coverage": true,
+        "zero terminal boxes": true,
+        "volume invariant": true
+      },
+      "counts": {
+        "evaluations": 326872,
+        "certified_leaves": 163440,
+        "terminal_boxes": 0,
+        "maximum_frontier": 26
+      },
+      "target_box": {
+        "x": "[0,1/64]",
+        "y": "[0,1]",
+        "lambda": "[1,100]",
+        "exact_volume": "99/64"
+      },
+      "partition": {
+        "leaf_volume": "99/64",
+        "terminal_volume": "0",
+        "volume_invariant": true
+      },
+      "worst_absolute_upper": "[7.0226482176879782499251090923866396423372845794733 +/- 3.89e-50]",
+      "worst_certified_leaf": {
+        "x_lo": "255/16384",
+        "x_hi": "1/64",
+        "y_lo": "43/64",
+        "y_hi": "173/256",
+        "lambda_lo": "1",
+        "lambda_hi": "3/2",
+        "split_depth": 17,
+        "absolute_upper": "[7.0226482176879782499251090923866396423372845794733 +/- 3.89e-50]",
+        "density": {
+          "real_ball": "[+/- 7.03]",
+          "real_lower": "[-6.3737167543073754488053596576133603576627154205267 +/- 3.89e-50]",
+          "real_upper": "[7.0226482176879782499251090923866396423372845794733 +/- 3.89e-50]",
+          "imag_ball": "0",
+          "imag_contains_zero": true
+        }
+      },
+      "accepted_leaf_digest_sha256": "fe1406715b7f397c6e15d2a26a1647c254e5293ef919a12e16c3333bf62acba6",
+      "terminal_reason_counts": {},
+      "terminal_examples": [],
+      "traversal": "deterministic depth-first, left child before right child",
+      "compact_output": "Accepted leaves are represented by exact aggregate volume, count, deterministic SHA-256 stream digest, and the worst accepted leaf."
+    },
+    {
+      "name": "outer near u=r*sqrt(2)*t",
+      "status": "CERTIFIED",
+      "requested_absolute_bound": "144100.00000000000000000000000000000000000000000000",
+      "conditions": {
+        "at least one accepted density box": true,
+        "accepted boxes satisfy the requested absolute bound": true,
+        "exact rational coverage": true,
+        "zero terminal boxes": true,
+        "volume invariant": true
+      },
+      "counts": {
+        "evaluations": 146356,
+        "certified_leaves": 73182,
+        "terminal_boxes": 0,
+        "maximum_frontier": 22
+      },
+      "target_box": {
+        "x": "[0,1/128]",
+        "y": "[0,1]",
+        "lambda": "[1,100]",
+        "exact_volume": "99/128"
+      },
+      "partition": {
+        "leaf_volume": "99/128",
+        "terminal_volume": "0",
+        "volume_invariant": true
+      },
+      "worst_absolute_upper": "[139085.32156101032823229814945402151079282411660172 +/- 4.32e-45]",
+      "worst_certified_leaf": {
+        "x_lo": "23/8192",
+        "x_hi": "47/16384",
+        "y_lo": "0",
+        "y_hi": "1/64",
+        "lambda_lo": "70",
+        "lambda_hi": "1135/16",
+        "split_depth": 18,
+        "absolute_upper": "[139085.32156101032823229814945402151079282411660172 +/- 4.32e-45]",
+        "density": {
+          "real_ball": "[+/- 1.40e+5]",
+          "real_lower": "[-114313.33713039592176770185054597848920717588339828 +/- 4.67e-45]",
+          "real_upper": "[139085.32156101032823229814945402151079282411660172 +/- 4.32e-45]",
+          "imag_ball": "0",
+          "imag_contains_zero": true
+        }
+      },
+      "accepted_leaf_digest_sha256": "bb99d4d2b218b19350879e9d6725ee252a6c39da52462146f3f8939a9cc5606a",
+      "terminal_reason_counts": {},
+      "terminal_examples": [],
+      "traversal": "deterministic depth-first, left child before right child",
+      "compact_output": "Accepted leaves are represented by exact aggregate volume, count, deterministic SHA-256 stream digest, and the worst accepted leaf."
+    },
+    {
+      "name": "outer junction signed chart 1/128<=t<=1/64",
+      "status": "CERTIFIED",
+      "requested_absolute_bound": "[144317.91458478051661851741288647364566403902922025 +/- 6.43e-46]",
+      "conditions": {
+        "at least one accepted density box": true,
+        "accepted boxes satisfy the requested absolute bound": true,
+        "exact rational coverage": true,
+        "zero terminal boxes": true,
+        "volume invariant": true
+      },
+      "counts": {
+        "evaluations": 57440,
+        "certified_leaves": 28724,
+        "terminal_boxes": 0,
+        "maximum_frontier": 19
+      },
+      "target_box": {
+        "x": "[1/128,1/64]",
+        "y": "[0,1/64]",
+        "lambda": "[1,100]",
+        "exact_volume": "99/8192"
+      },
+      "partition": {
+        "leaf_volume": "99/8192",
+        "terminal_volume": "0",
+        "volume_invariant": true
+      },
+      "worst_absolute_upper": "[142571.62240051379073027342926034431545434687801515 +/- 2.52e-45]",
+      "worst_certified_leaf": {
+        "x_lo": "97/8192",
+        "x_hi": "49/4096",
+        "y_lo": "0",
+        "y_hi": "1/4096",
+        "lambda_lo": "1555/16",
+        "lambda_hi": "785/8",
+        "split_depth": 17,
+        "absolute_upper": "[142571.62240051379073027342926034431545434687801515 +/- 2.52e-45]",
+        "density": {
+          "real_ball": "[+/- 1.43e+5]",
+          "real_lower": "[-142265.88248229870926972657073965568454565312198485 +/- 2.17e-45]",
+          "real_upper": "[142571.62240051379073027342926034431545434687801515 +/- 2.52e-45]",
+          "imag_ball": "0",
+          "imag_contains_zero": true
+        }
+      },
+      "accepted_leaf_digest_sha256": "19fc2130d3e90e0449b428cda7d4a1afe177be8dc5bbe74fa6e2941f054a251e",
+      "terminal_reason_counts": {},
+      "terminal_examples": [],
+      "traversal": "deterministic depth-first, left child before right child",
+      "compact_output": "Accepted leaves are represented by exact aggregate volume, count, deterministic SHA-256 stream digest, and the worst accepted leaf."
+    },
+    {
+      "name": "outer middle factored cosine chart 1/64<=t<=255/256",
+      "status": "CERTIFIED",
+      "requested_absolute_bound": "[144317.91458478051661851741288647364566403902922025 +/- 6.43e-46]",
+      "conditions": {
+        "at least one accepted density box": true,
+        "accepted boxes satisfy the requested absolute bound": true,
+        "exact rational coverage": true,
+        "zero terminal boxes": true,
+        "volume invariant": true
+      },
+      "counts": {
+        "evaluations": 996728,
+        "certified_leaves": 498368,
+        "terminal_boxes": 0,
+        "maximum_frontier": 25
+      },
+      "target_box": {
+        "x": "[1/64,255/256]",
+        "y": "[0,1/64]",
+        "lambda": "[1,100]",
+        "exact_volume": "24849/16384"
+      },
+      "partition": {
+        "leaf_volume": "24849/16384",
+        "terminal_volume": "0",
+        "volume_invariant": true
+      },
+      "worst_absolute_upper": "[144311.48783467518071315177903456029566035893048480 +/- 3.15e-45]",
+      "worst_certified_leaf": {
+        "x_lo": "5291/65536",
+        "x_hi": "2771/32768",
+        "y_lo": "215/16384",
+        "y_hi": "27/2048",
+        "lambda_lo": "5605/64",
+        "lambda_hi": "1405/16",
+        "split_depth": 23,
+        "absolute_upper": "[144311.48783467518071315177903456029566035893048480 +/- 3.15e-45]",
+        "density": {
+          "real_ball": "[+/- 1.45e+5]",
+          "real_lower": "[-138728.91499735606928684822096543970433964106951520 +/- 2.80e-45]",
+          "real_upper": "[144311.48783467518071315177903456029566035893048480 +/- 3.15e-45]",
+          "imag_ball": "0",
+          "imag_contains_zero": true
+        }
+      },
+      "accepted_leaf_digest_sha256": "90020599783d56c8b29b62103a210d89716006eefe983308fb74e44bd01aa309",
+      "terminal_reason_counts": {},
+      "terminal_examples": [],
+      "traversal": "deterministic depth-first, left child before right child",
+      "compact_output": "Accepted leaves are represented by exact aggregate volume, count, deterministic SHA-256 stream digest, and the worst accepted leaf."
+    },
+    {
+      "name": "outer endpoint signed chart 255/256<=t<=1",
+      "status": "CERTIFIED",
+      "requested_absolute_bound": "[144317.91458478051661851741288647364566403902922025 +/- 6.43e-46]",
+      "conditions": {
+        "at least one accepted density box": true,
+        "accepted boxes satisfy the requested absolute bound": true,
+        "exact rational coverage": true,
+        "zero terminal boxes": true,
+        "volume invariant": true
+      },
+      "counts": {
+        "evaluations": 87356,
+        "certified_leaves": 43682,
+        "terminal_boxes": 0,
+        "maximum_frontier": 23
+      },
+      "target_box": {
+        "x": "[255/256,1]",
+        "y": "[0,1/64]",
+        "lambda": "[1,100]",
+        "exact_volume": "99/16384"
+      },
+      "partition": {
+        "leaf_volume": "99/16384",
+        "terminal_volume": "0",
+        "volume_invariant": true
+      },
+      "worst_absolute_upper": "[5.3406720183296976515360750799885572613717664055493 +/- 3.28e-51]",
+      "worst_certified_leaf": {
+        "x_lo": "255/256",
+        "x_hi": "1",
+        "y_lo": "0",
+        "y_hi": "1/64",
+        "lambda_lo": "2",
+        "lambda_hi": "3",
+        "split_depth": 0,
+        "absolute_upper": "[5.3406720183296976515360750799885572613717664055493 +/- 3.28e-51]",
+        "density": {
+          "real_ball": "[+/- 5.35]",
+          "real_lower": "[-5.3406720183296976515360750799885572613717664055493 +/- 3.28e-51]",
+          "real_upper": "[4.1752210982636632493428311700114427386282335944507 +/- 3.28e-51]",
+          "imag_ball": "0",
+          "imag_contains_zero": true
+        }
+      },
+      "accepted_leaf_digest_sha256": "6db5a9523b1bb444121c9f3293110e27b1ca0e00f14c697eb3803c13087fbd7f",
+      "terminal_reason_counts": {},
+      "terminal_examples": [],
+      "traversal": "deterministic depth-first, left child before right child",
+      "compact_output": "Accepted leaves are represented by exact aggregate volume, count, deterministic SHA-256 stream digest, and the worst accepted leaf."
+    }
+  ],
+  "endpoint_factorization_audit": {
+    "status": "PASSED",
+    "checks": {
+      "first_endpoint_factorization": true,
+      "second_endpoint_factorization_after_u_equals_rz": true,
+      "complete_outer_far_density_factorization": true,
+      "signed_chart_one_minus_c_squared": true,
+      "signed_chart_N": true,
+      "signed_chart_R_squared": true,
+      "signed_chart_c_minus_w": true,
+      "outer_t_jacobian": true,
+      "rho_derivative_formula": true,
+      "signed_cap_above_inverse_sqrt2": true,
+      "opposite_pole_factor_is_z2_minus_2": true,
+      "no_division_by_z2_minus_2": true
+    },
+    "formulas": {
+      "Cw_numerator": "(z**2 - 2)*(-L*u + z**2*(L - 1) + 1)",
+      "Cww_numerator": "-L*(z**2 - 2)*(2*L*u**2 - 4*L*u*z**2 + 2*L*z**4 + 3*u*z**2 - 3*u - 2*z**4 + z**2)/z",
+      "outer_far_density_factored": "(z**2 - 2)*(h1*(2*z**2 - 2)*(-L*u + z**2*(L - 1) + 1) + (-L*h1*(2*L*u**2 - 4*L*u*z**2 + 2*L*z**4 + 3*u*z**2 - 3*u - 2*z**4 + z**2)/(z*(L*(u - z**2)**2/z**2 - z**2 + 2)) + h2*(z**2 - 2)*(-L*u + z**2*(L - 1) + 1)**2/(root*(L*(u - z**2)**2/z**2 - z**2 + 2)))*(-u*z + u/z + z))/(root*(L*(u - z**2)**2/z**2 - z**2 + 2))",
+      "signed_N": "-2*t**2*u + 2*t**2 + u",
+      "signed_rho": "2*t*sqrt(1 - t)*sqrt(t + 1)",
+      "signed_rho_derivative": "2*(1 - 2*t**2)/sqrt(1 - t**2)",
+      "signed_rho_squared": "4*t**2*(1 - t)*(t + 1)",
+      "signed_R_squared": "lam**2*(-2*t**2 + u)**2 + 4*t**2*(1 - t)*(t + 1)",
+      "signed_delta": "atan(rho*(lambda*w-(lambda-1/lambda)*c)/N)",
+      "signed_delta_w": "lambda*rho/R_squared",
+      "signed_delta_ww": "2*lambda^3*rho*(c-w)/R_squared^2",
+      "outer_t_jacobian": "4*t",
+      "far_relation": "u=r*z, z=sqrt(2)*t"
+    },
+    "domain_statement": "On t>=255/256, 0<=u<=1/64 and 1<=lambda<=100, N>0, rho(t) is decreasing, and all clamped quantities are independently proved nonnegative by their defining formulas and domain bounds.",
+    "conclusion": "The endpoint chart uses monotone hulls and only clamps outward-rounding leakage for quantities already proved nonnegative."
+  },
+  "environment": {
+    "python": "3.13.14",
+    "python_flint": "0.9.0",
+    "flint": "3.6.0"
+  },
+  "arithmetic": "python-flint Arb/Acb ball arithmetic plus exact rational coverage",
+  "derivation": "The outer integral is partitioned exactly at t=1/128, 1/64, 255/256, and 1. Each slab is bounded independently and multiplied by its exact rational t width before the final modulus comparison.",
+  "script_sha256": "7ba1dbe8538f5d106895a77da637d787fdbbe5fd4a89519c0bc59a1ae928c604",
+  "endpoint_wrapper_sha256": "4214f0224d5206adf8b52b18abb3f4aca96e307c3aeca0a97b27f1f413407910",
+  "dfs_driver_sha256": "4977baf99b0f5382ac02d0e70a7f18f285b5c3cb8cebaaa7c721fe33e374515f",
+  "base_driver_sha256": "968aaa8e86250ec1c04a945fa7a7f85e8ad6778e9ee6ef3acb9a2ab6ec0fbea5"
+}

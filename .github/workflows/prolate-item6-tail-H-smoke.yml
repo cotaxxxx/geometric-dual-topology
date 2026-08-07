@@ -1,0 +1,189 @@
+name: Prolate item 6 first-six tail H smoke
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/prolate-item6-tail-H-smoke.yml"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_interval_constructor_audit.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_block_arb.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_block_arb.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_regularized_symbolic_audit.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_paired_chart_symbolic_audit.py"
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-tail-H-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install exact audit environment
+        run: python -m pip install sympy==1.14.0 python-flint==0.9.0
+      - name: Verify rational intervals and regularized H charts
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: |
+          python prolate_axis_interval_constructor_audit.py
+          python prolate_axis_tail_regularized_symbolic_audit.py
+          python prolate_axis_tail_paired_chart_symbolic_audit.py
+      - name: Upload exact audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-H-smoke-audit
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_interval_constructor_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_regularized_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_paired_chart_symbolic_audit.json
+
+  first-six-H:
+    name: H-smoke-${{ matrix.name }}
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - name: w1_20-1_8
+            w_lo_num: 1
+            w_lo_den: 20
+            w_hi_num: 1
+            w_hi_den: 8
+          - name: w1_8-1_4
+            w_lo_num: 1
+            w_lo_den: 8
+            w_hi_num: 1
+            w_hi_den: 4
+          - name: w1_4-3_8
+            w_lo_num: 1
+            w_lo_den: 4
+            w_hi_num: 3
+            w_hi_den: 8
+          - name: w3_8-1_2
+            w_lo_num: 3
+            w_lo_den: 8
+            w_hi_num: 1
+            w_hi_den: 2
+          - name: w1_2-5_8
+            w_lo_num: 1
+            w_lo_den: 2
+            w_hi_num: 5
+            w_hi_den: 8
+          - name: w5_8-3_4
+            w_lo_num: 5
+            w_lo_den: 8
+            w_hi_num: 3
+            w_hi_den: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install validated arithmetic
+        run: python -m pip install python-flint==0.9.0
+      - name: Compile regularized H drivers
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python -m py_compile
+          prolate_axis_tail_H_block_arb.py
+          prolate_axis_tail_H_scaled_block_arb.py
+      - name: Run bounded first-slab H diagnostic
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          set +e
+          OUT="prolate_axis_tail_H_smoke_${{ matrix.name }}.json"
+          python prolate_axis_tail_H_scaled_block_arb.py \
+            --dps 35 \
+            --tolerance 1e-12 \
+            --integration-depth 14 \
+            --eval-limit 25000 \
+            --max-split-depth 4 \
+            --max-boxes 8 \
+            --mu-lo-num 1 \
+            --mu-lo-den 200 \
+            --mu-hi-num 3 \
+            --mu-hi-den 400 \
+            --w-lo-num ${{ matrix.w_lo_num }} \
+            --w-lo-den ${{ matrix.w_lo_den }} \
+            --w-hi-num ${{ matrix.w_hi_num }} \
+            --w-hi-den ${{ matrix.w_hi_den }} \
+            --json "$OUT"
+          CODE=$?
+          echo "diagnostic_exit_code=$CODE" >> "$GITHUB_ENV"
+          exit 0
+      - name: Upload bounded H diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-H-smoke-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_smoke_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_smoke_${{ matrix.name }}.json.sha256
+
+  summarize:
+    needs: first-six-H
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-tail-H-smoke-w*
+          path: diagnostics
+          merge-multiple: true
+      - name: Summarize terminal reasons
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob
+          import json
+          from collections import Counter
+          from pathlib import Path
+
+          rows = []
+          for filename in sorted(glob.glob("diagnostics/prolate_axis_tail_H_smoke_*.json")):
+              data = json.loads(Path(filename).read_text(encoding="utf-8"))
+              reasons = Counter(item.get("reason", "missing") for item in data.get("terminal", []))
+              rows.append({
+                  "file": Path(filename).name,
+                  "scope": data.get("scope"),
+                  "status": data.get("status"),
+                  "counts": data.get("counts"),
+                  "terminal_reason_counts": dict(sorted(reasons.items())),
+                  "partition": data.get("partition"),
+                  "worst_certified_leaf": data.get("worst_certified_leaf"),
+                  "first_terminal": (data.get("terminal") or [None])[0],
+                  "evaluation_trace": data.get("evaluation_trace"),
+              })
+
+          result = {
+              "status": "COMPLETE_DIAGNOSTIC" if len(rows) == 6 else "INCOMPLETE_DIAGNOSTIC",
+              "expected_blocks": 6,
+              "received_blocks": len(rows),
+              "purpose": (
+                  "Component-level interval diagnosis for the first six H blocks; "
+                  "this bounded smoke run is not a full positivity certificate."
+              ),
+              "blocks": rows,
+          }
+          Path("prolate_axis_tail_H_first_six_smoke_summary.json").write_text(
+              json.dumps(result, indent=2), encoding="utf-8"
+          )
+          print(json.dumps(result, indent=2))
+          if len(rows) != 6:
+              raise SystemExit(1)
+          PY
+      - name: Upload first-six H summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-H-first-six-smoke-summary
+          path: prolate_axis_tail_H_first_six_smoke_summary.json

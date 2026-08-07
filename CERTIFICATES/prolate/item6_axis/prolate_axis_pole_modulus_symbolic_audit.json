@@ -1,0 +1,28 @@
+{
+  "status": "PASSED",
+  "checks": {
+    "Cw_product_cancellation": true,
+    "Cww_product_cancellation": true,
+    "compact_density_assembly": true,
+    "inner_N_factor": true,
+    "inner_R2_factor": true,
+    "inner_c_minus_w_factor": true,
+    "inner_half_jacobian": true,
+    "outer_N_factor": true,
+    "outer_R2_factor": true,
+    "outer_c_minus_w_factor": true,
+    "outer_half_jacobian": true
+  },
+  "formulas": {
+    "Cw_safe": "(L*n*q/radial - c)/(sqrt(radial)*sqrt(s2))",
+    "Cww_safe": "(-2*L*c*q/radial + n*(3*L**2*q**2/radial**2 - L/radial))/(sqrt(radial)*sqrt(s2))",
+    "compact_density": "-2*c*h1*(L*n*q/radial - c)/(sqrt(radial)*sqrt(s2)) + n*(h1*(-2*L*c*q/radial + n*(3*L**2*q**2/radial**2 - L/radial))/(sqrt(radial)*sqrt(s2)) + h2*(L*n*q/radial - c)**2/(radial*s2))",
+    "inner_N": "u*(-u**2*y**2 + u*y**2 + 1)",
+    "inner_R2": "u**2*(L*(-u*y**2 + 1)**2 + y**2*(-u**2*y**2 + 2))",
+    "outer_N": "z*(-r*z**2 + r + z)",
+    "outer_R2": "z**2*(L*(r - z)**2 - z**2 + 2)"
+  },
+  "conclusion": "The identities are checked on N!=0. Their cancellation-safe right-hand sides extend continuously to the projective corner N=0 and are the expressions evaluated by the Arb cover. The inner and outer Jacobians give exactly the transformed densities used by the modulus proof.",
+  "branch_note": "On 0<=u<=1/64, 0<=y,r<=1, 0<=z<=sqrt(2), and L>=1, the geometric radicands are nonnegative; the certificate evaluates the positive square-root branch inherited from the original geometry.",
+  "script_sha256": "758957cda7e01d83c7b4f47690998416c610ba0539fbbd69ce8d7692aaccb0fb"
+}

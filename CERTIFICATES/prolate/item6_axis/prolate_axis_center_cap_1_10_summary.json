@@ -1,0 +1,44 @@
+{
+  "status": "CERTIFIED",
+  "statement": "Psi_lambda(w)>0 for 1<=lambda<=10 and 0<w<=1/20",
+  "sufficient_statement": "A_lambda''(v)>0 for 0<=v<=1/20 and 1<=lambda<=10",
+  "proof_identity": "Psi_lambda(w)/w = integral_0^1 A_lambda''(t*w) dt",
+  "blocks": 9,
+  "lambda_blocks": [
+    "[1,2]",
+    "[2,3]",
+    "[3,4]",
+    "[4,5]",
+    "[5,6]",
+    "[6,7]",
+    "[7,8]",
+    "[8,9]",
+    "[9,10]"
+  ],
+  "counts": {
+    "evaluations": 6203,
+    "certified_leaves": 3106,
+    "terminal_boxes": 0
+  },
+  "conditions": {
+    "all_blocks_certified": true,
+    "same_v_interval": true,
+    "exact_lambda_adjacency": true,
+    "exact_rational_coverage_each_block": true,
+    "zero_terminal_boxes": true
+  },
+  "worst_certified_leaf": {
+    "v": "[13/640,7/320]",
+    "lambda": "[153/16,77/8]",
+    "strict_lower_endpoint": "0.00012893655173892051421755471961636338423925380545573"
+  },
+  "integrity": {
+    "workflow_run": 30175950226,
+    "workflow_head": "c8ab0b8966f4e41cb62075e352a18960bb31af4b",
+    "combined_artifact_id": 8624336730,
+    "combined_artifact_sha256": "14412e60c9c007f6739859545681b531bde2e88358d9558962ec49d7aecb5242",
+    "combined_json_sha256": "f06decf0ee534a30424a3d73715af5762c7b06e854412dd2df50ffa2257b2389",
+    "combiner_script_sha256": "fea3c198b81f330dd184d4390805759d890e17868d51634f9e3f689bf0d3cca1"
+  },
+  "scope_limit": "Region C only on lambda<=10; item 6 remains NOT CERTIFIED"
+}

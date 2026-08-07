@@ -1,0 +1,83 @@
+name: Prolate item 6 signed-angle smoke certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-signed-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  signed-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - name: center
+            quantity: A_second
+            w_lo_num: 0
+            w_lo_den: 1
+            w_hi_num: 1
+            w_hi_den: 4
+            lambda_lo: 1
+            lambda_hi: 2
+          - name: middle
+            quantity: Psi
+            w_lo_num: 1
+            w_lo_den: 2
+            w_hi_num: 5
+            w_hi_den: 8
+            lambda_lo: 3
+            lambda_hi: 5
+          - name: pole
+            quantity: Psi
+            w_lo_num: 31
+            w_lo_den: 32
+            w_hi_num: 63
+            w_hi_den: 64
+            lambda_lo: 70
+            lambda_hi: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install audit and validated arithmetic
+        run: python -m pip install sympy==1.14.0 python-flint==0.9.0
+      - name: Verify signed-angle reduction
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_angle_symbolic_audit.py
+      - name: Compile signed-angle driver
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python -m py_compile prolate_axis_signed_rectangle_arb.py
+      - name: Certify representative rectangle
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_signed_rectangle_arb.py
+          --dps 45
+          --tolerance 1e-16
+          --integration-depth 20
+          --eval-limit 100000
+          --max-split-depth 14
+          --max-boxes 8192
+          --w-lo-num ${{ matrix.w_lo_num }}
+          --w-lo-den ${{ matrix.w_lo_den }}
+          --w-hi-num ${{ matrix.w_hi_num }}
+          --w-hi-den ${{ matrix.w_hi_den }}
+          --lambda-lo ${{ matrix.lambda_lo }}
+          --lambda-hi ${{ matrix.lambda_hi }}
+          --quantity ${{ matrix.quantity }}
+          --sign positive
+          --json prolate_axis_signed_smoke_${{ matrix.name }}.json
+      - name: Upload representative certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-signed-smoke-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_angle_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_smoke_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_smoke_${{ matrix.name }}.json.sha256

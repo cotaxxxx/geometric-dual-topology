@@ -1,0 +1,121 @@
+name: Prolate item 6 middle interior certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-middle-interior-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  middle-block:
+    name: middle-${{ matrix.lo }}-${{ matrix.hi }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lo: 1
+            hi: 2
+          - lo: 2
+            hi: 3
+          - lo: 3
+            hi: 4
+          - lo: 4
+            hi: 5
+          - lo: 5
+            hi: 6
+          - lo: 6
+            hi: 7
+          - lo: 7
+            hi: 8
+          - lo: 8
+            hi: 9
+          - lo: 9
+            hi: 10
+          - lo: 10
+            hi: 12
+          - lo: 12
+            hi: 16
+          - lo: 16
+            hi: 24
+          - lo: 24
+            hi: 36
+          - lo: 36
+            hi: 52
+          - lo: 52
+            hi: 72
+          - lo: 72
+            hi: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install validated arithmetic
+        run: python -m pip install python-flint==0.9.0
+      - name: Certify middle interior block
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_interior_block_arb.py
+          --dps 50
+          --tolerance 1e-18
+          --integration-depth 22
+          --eval-limit 200000
+          --max-split-depth 16
+          --max-boxes 32768
+          --w-lo-num 1
+          --w-lo-den 2
+          --w-hi-num 3
+          --w-hi-den 4
+          --lambda-lo ${{ matrix.lo }}
+          --lambda-hi ${{ matrix.hi }}
+          --json prolate_axis_middle_block_${{ matrix.lo }}_${{ matrix.hi }}.json
+      - name: Upload middle block certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-middle-block-${{ matrix.lo }}-${{ matrix.hi }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_middle_block_${{ matrix.lo }}_${{ matrix.hi }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_middle_block_${{ matrix.lo }}_${{ matrix.hi }}.json.sha256
+
+  combine:
+    name: middle-combine-1-100
+    needs: middle-block
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download all middle block certificates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-middle-block-*
+          path: CERTIFICATES/prolate/item6_axis/middle_outputs
+          merge-multiple: true
+      - name: Combine exact adjacent middle blocks
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_interior_combine.py
+          --root middle_outputs
+          --pattern "prolate_axis_middle_block_*.json"
+          --w-lo 1/2
+          --w-hi 3/4
+          --lambda-lo 1
+          --lambda-hi 100
+          --expected-blocks 16
+          --json prolate_axis_middle_combined_1_100.json
+      - name: Upload combined middle certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-middle-combined-1-100
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_middle_combined_1_100.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_middle_combined_1_100.json.sha256
