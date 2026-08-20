@@ -1,0 +1,74 @@
+{
+  "stage": "item2_boundary_entry",
+  "status": "CERTIFIED",
+  "certified_statement": "Let B(lambda) = F(1,lambda) = d/dr E_lambda(r)|_{r=1}. Then B(103/50) > 0, B(207/100) < 0, B(206538/100000) > 0, B(206539/100000) < 0, and B'(lambda) < 0 for every lambda in [206538/100000, 206539/100000]. Hence B has a root in (206538/100000, 206539/100000), it is the unique root in that interval, and lambda_partial < 206539/100000 strictly. The item-0 finite-box ceiling 206539/100000 is therefore a strict rational upper bound for the boundary-entry parameter, not the parameter itself.",
+  "form": {
+    "coordinates": "contact-centred: t = sin(chi/2), psi local azimuth about e_1",
+    "identities": {
+      "N = (lambda^2-1)c^2 + 2m": "4 t^2 A",
+      "K = (lambda^2-1)c^2 u + m(2-m)": "4 t^2 (1-t^2) J",
+      "m K / N^{3/2}": "t (1-t^2) J / A^{3/2}",
+      "C sqrt(ell)": "lambda / sqrt(W)",
+      "x = cos_alpha": "lambda t / (sqrt(W) sqrt(A))",
+      "A": "1 + d (1-t^2) q",
+      "J": "1 + d (1-2t^2) q",
+      "W": "lambda^2 - d c^2",
+      "d": "lambda^2 - 1",
+      "q": "sin^2(psi)",
+      "c^2": "4 t^2 (1-t^2) q"
+    },
+    "integral": "B(lambda) = int_0^{pi/2} int_0^1 (4t/pi) [ -u h(x) - (lambda/sqrt(W)) h'(x) t(1-t^2) J / A^{3/2} ] dt dpsi",
+    "endpoint_behaviour": "integrand vanishes at t=0 (factor 4t) and at t=1 (x=1, h(1)=0, 1-t^2=0); no corner cap required",
+    "measure_cross_check": "(4t/pi) m h(x) = (8 t^3/pi) h(x), the kernel weight of the item-5 boundary_energy routine"
+  },
+  "evaluations": {
+    "B(103/50)": {
+      "ball": "[0.0011805 +/- 1.91e-8]",
+      "certified_positive": true
+    },
+    "B(207/100)": {
+      "ball": "[-0.0010096 +/- 5.05e-8]",
+      "certified_negative": true
+    },
+    "B(206538/100000)": {
+      "lower": "5.000901508114649143366787e-7",
+      "upper": "5.043030604367878613303983e-7",
+      "certified_positive": true
+    },
+    "B(206539/100000)": {
+      "lower": "-1.689434504230109359351407e-6",
+      "upper": "-1.685221462203751831903863e-6",
+      "certified_negative": true
+    },
+    "Bprime([206538/100000, 206539/100000])": {
+      "ball": "[-0.2190 +/- 7.51e-5]",
+      "upper": "-0.218924954651047902",
+      "certified_negative": true
+    }
+  },
+  "conclusion": {
+    "enclosure": "lambda_partial in (206538/100000, 206539/100000)",
+    "uniqueness": "unique root on that interval, by B' < 0",
+    "relation_to_item0_box": "lambda_partial < 206539/100000 = item-0 finite-box ceiling"
+  },
+  "methods": {
+    "psi_partition": "four exact bands of [0, pi/2], each enclosed independently",
+    "t_integration": "Arb rigorous adaptive integration on [0,1], inner",
+    "angle_data": "h and h' from 2F1(1/2,1/2;3/2;z) and 0F1(3/2;-h/4); h'' from 2F1(3/2,3/2;5/2;z) and 2F1(5/2,5/2;7/2;z), regular at x=1 with h''(1)=2/3",
+    "Bprime": "explicit forward differentiation in lambda, no finite differences"
+  },
+  "run_parameters": {
+    "B_coarse_bracket": {"dps": 25, "tolerance": "1e-8", "depth_limit": 30, "eval_limit": 40000},
+    "B_tight_bracket": {"dps": 25, "tolerance": "1e-9", "depth_limit": 30, "eval_limit": 40000},
+    "Bprime": {"dps": 18, "tolerance": "1e-5", "depth_limit": 22, "eval_limit": 8000}
+  },
+  "environment": {
+    "python": "3.12.3",
+    "python_flint": "0.9.0"
+  },
+  "scope": "This certificate covers the boundary-entry parameter only. It makes no claim about the uniqueness of the interior stationary branch (item 2 proper), which requires the single sign change of F_r.",
+  "numerical_reference_not_certified": {
+    "lambda_partial": "2.065382293627",
+    "gap_to_box_ceiling": "7.7e-6"
+  }
+}

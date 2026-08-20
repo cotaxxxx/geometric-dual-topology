@@ -1,0 +1,81 @@
+{
+  "stage": "item2_boundary_entry_independent_recheck",
+  "status": "CERTIFIED",
+  "independence": {
+    "source": "published algebraic forms only",
+    "unverified_provenance_file_read": false,
+    "symbolic_change_of_variables": "exact",
+    "bracket_relative_mismatch": "7.7e-41",
+    "corner_limit": "-pi^2/4",
+    "h_second_derivative_at_1": "2/3"
+  },
+  "certified_statement": "B(103/50)>0, B(207/100)<0, B(206538/100000)>0, B(206539/100000)<0, and B'(lambda)<0 on [206538/100000,206539/100000]. Hence lambda_partial is the unique root in (206538/100000,206539/100000).",
+  "evaluations": {
+    "B(103/50)": {
+      "ball": "[0.001181 +/- 7.92e-7]",
+      "lower": "0.001180208057744176156192038",
+      "upper": "0.001180808800491279467295312",
+      "sign": "POSITIVE"
+    },
+    "B(207/100)": {
+      "ball": "[-0.001010 +/- 7.46e-7]",
+      "lower": "-0.001009866572862439070060544",
+      "upper": "-0.001009254315186769544790776",
+      "sign": "NEGATIVE"
+    },
+    "B(206538/100000)": {
+      "ball": "[+/- 8.05e-7]",
+      "lower": "2.003284511510582614056137e-7",
+      "upper": "8.040647600972260714689571e-7",
+      "sign": "POSITIVE"
+    },
+    "B(206539/100000)": {
+      "ball": "[-2e-6 +/- 6.15e-7]",
+      "lower": "-1.989245103410365999127431e-6",
+      "upper": "-1.385410863023463633555844e-6",
+      "sign": "NEGATIVE"
+    },
+    "Bprime([206538/100000,206539/100000])": {
+      "ball": "[-0.2190 +/- 7.48e-5]",
+      "lower": "-0.2189796249644106962363357",
+      "upper": "-0.2189252946784765396727370",
+      "sign": "NEGATIVE"
+    }
+  },
+  "methods": {
+    "B": "contact-centred (t,psi) form; four exact psi bands; rigorous nested acb.integral; sign judged only after summing all bands",
+    "Bprime": "Dual-over-acb forward differentiation over one lambda interval ball; no finite differences",
+    "angle_data": "hypergeometric regularization near x=1 and certified acos branch elsewhere"
+  },
+  "run_parameters": {
+    "B": {
+      "python_flint": "0.9.0",
+      "dps": 30,
+      "rel_tol": "2^-22",
+      "eval_limit": 40000,
+      "depth_limit": 30,
+      "bands": 4,
+      "seconds": 7276.2
+    },
+    "Bprime": {
+      "python_flint": "0.9.0",
+      "dps": 18,
+      "rel_tol": "2^-18",
+      "eval_limit": 8000,
+      "depth_limit": 22,
+      "bands": 4
+    }
+  },
+  "implementation_files_sha256": {
+    "verify_change_of_variables.py": "ee77ba15192a288491eb8b0fe9ecfac5ce0275808ac83f65a36503dc27cc1233",
+    "boundary_entry_independent.py": "c9119399eb52ee81549131420d1c0cbf352207aaa9d6ad2c99a09095c5a56f11",
+    "bprime_independent.py": "f5f2fe68773423e7ff037e4be9e31094a4ceff5489abd5aff8b14fc1361cd671",
+    "run_enclosure.py": "b7839df121d479bd4e956004a5e632995bdcaa92b0ae21e7b9fc9aabfc94a720"
+  },
+  "conclusion": {
+    "lambda_partial": "(206538/100000,206539/100000)",
+    "unique_on_interval": true,
+    "strict_upper_bound": "206539/100000"
+  },
+  "scope": "Boundary-entry parameter only. Item 2 proper, requiring the single sign change of F_r, remains open."
+}
