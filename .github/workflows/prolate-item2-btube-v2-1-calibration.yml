@@ -1,0 +1,142 @@
+name: Prolate item 2 B-TUBE v2.1 calibration only
+
+on:
+  push:
+    tags:
+      - "btube-v2-1-calibration-approved-*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: btube-v2-1-calibration-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  calibration:
+    if: startsWith(github.ref_name, 'btube-v2-1-calibration-approved-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Verify approved tag names the exact run head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${GITHUB_REF_NAME#btube-v2-1-calibration-approved-}"
+          test "${expected}" = "${GITHUB_SHA}"
+          test "${#expected}" -eq 40
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Verify checkout and fresh workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test -z "$(git status --porcelain)"
+          test ! -e btube-calibration-run
+          test ! -e btube-calibration-delivery
+
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.11"
+
+      - name: Enforce B-LOCAL binding gate before any result-bearing step
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          config = json.loads(Path("config.calibration.json").read_text(encoding="utf-8"))
+          dependency = config.get("blocal_dependency")
+          if (
+              config.get("binding_to_final_lambda_start") is not True
+              or not isinstance(dependency, dict)
+              or dependency.get("status") != "PINNED"
+          ):
+              raise SystemExit(
+                  "B-LOCAL/B-ENTRY unpinned: workflow binding run prohibited"
+              )
+          PY
+
+      - name: Install hash-locked calibration dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install \
+            --require-hashes \
+            --only-binary=:all: \
+            -r CERTIFICATES/prolate/item2_circle/b_tube_v2_1/requirements-calibration.txt
+
+      - name: Compile and run static controls
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -name '*.py' -print0 | sort -z | xargs -0 python -m py_compile
+          python -m unittest discover -s tests -v
+          python calibration.py verify-config
+
+      - name: Run calibration-only candidate evaluation
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python calibration.py run --out "${GITHUB_WORKSPACE}/btube-calibration-run"
+
+      - name: Independent canonical and chain verification
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python calibration.py verify \
+            --phase pre \
+            --source-head "${GITHUB_SHA}" \
+            --out "${GITHUB_WORKSPACE}/btube-calibration-run"
+
+      - name: Independent full record-layout verification
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/test_calibration.py verify-output \
+            --source-head "${GITHUB_SHA}" \
+            --out "${GITHUB_WORKSPACE}/btube-calibration-run"
+
+      - name: Assemble byte-closed delivery
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python calibration.py deliver \
+            --source-head "${GITHUB_SHA}" \
+            --out "${GITHUB_WORKSPACE}/btube-calibration-run" \
+            --delivery "${GITHUB_WORKSPACE}/btube-calibration-delivery"
+
+      - name: Independent final receipt verification
+        working-directory: CERTIFICATES/prolate/item2_circle/b_tube_v2_1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python calibration.py verify \
+            --phase final \
+            --source-head "${GITHUB_SHA}" \
+            --archive "${GITHUB_WORKSPACE}/btube-calibration-delivery/btube-v2-1-calibration.zip" \
+            --receipt "${GITHUB_WORKSPACE}/btube-calibration-delivery/DELIVERY_RECEIPT.json"
+          test -z "$(git status --porcelain)"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: btube-v2-1-calibration-${{ github.sha }}
+          path: |
+            btube-calibration-delivery/btube-v2-1-calibration.zip
+            btube-calibration-delivery/DELIVERY_RECEIPT.json
+          if-no-files-found: error
+          retention-days: 14
