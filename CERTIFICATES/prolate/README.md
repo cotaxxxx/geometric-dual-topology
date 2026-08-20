@@ -45,3 +45,7 @@ contains no stationary point other than the center.
 See `ITEM0_THEOREM.md` for the assembled theorem and proof interfaces.
 Binary artifacts are immutable. Any replacement must use a new filename and
 a new SHA-256 manifest.
+
+## Numbering notes
+
+- `ITEM4_NUMBERING_NOTE.md` — records item 4 as a reserved gap, explains why later item numbers are not renumbered, and separates confirmed facts from unresolved history.
