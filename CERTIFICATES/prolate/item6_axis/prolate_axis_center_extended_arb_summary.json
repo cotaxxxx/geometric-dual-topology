@@ -1,0 +1,49 @@
+{
+  "status": "CERTIFIED",
+  "statement": "Q_parallel(lambda)>0 for every 1<=lambda<=100",
+  "coordinate": "normalized axial w-coordinate (q-coordinate)",
+  "parameter_interval": "[1,100]",
+  "counts": {
+    "evaluations": 4135,
+    "certified_leaves": 2117,
+    "terminal_boxes": 0
+  },
+  "coverage": {
+    "exact_rational": true,
+    "contiguous": true,
+    "all_accepted_real_lower_bounds_strictly_positive": true,
+    "all_imaginary_balls_contain_zero": true
+  },
+  "worst_certified_leaf": {
+    "lambda_lo": "231/4",
+    "lambda_hi": "925/16",
+    "split_depth": 4,
+    "rigorous_real_lower": "0.00020046868958001537682007201789783354707398439156606"
+  },
+  "environment": {
+    "python": "3.13.14",
+    "python_flint": "0.9.0",
+    "flint": "3.6.0",
+    "decimal_precision": 50
+  },
+  "settings": {
+    "integration_tolerance": "1e-18",
+    "integration_depth_limit": 22,
+    "integration_eval_limit": 200000,
+    "lambda_split_depth_limit": 12,
+    "box_evaluation_limit": 32768
+  },
+  "integrity": {
+    "workflow_run": 30159579964,
+    "workflow_artifact_id": 8619978829,
+    "artifact_sha256": "affc28ab8afd169edc057c62d9a7e41a6a1ea868534280b18c336b5d27ab5c80",
+    "certificate_json_sha256": "4726bd601464094f68c1490a510d3b255249b9cbcfbff1df9a95194524deae73",
+    "manifest_file_sha256": "eda34c19f6b19fec790c42aa6a91b6c0c0987a660ed6a8c6562b13cf26d72383",
+    "driver_script_sha256": "7de166c94c196fec299d78e3286f92fc2b45a2b5872e42c61820839e6d5f08c6"
+  },
+  "finite_tail_junction": {
+    "lambda_0": "100",
+    "mu_0": "1/100"
+  },
+  "limitations": "This certifies only the center Hessian on the compact interval [1,100]. The finite-w center cap, compact interior, pole cap, tail remainder and full item 6 theorem remain uncertified."
+}

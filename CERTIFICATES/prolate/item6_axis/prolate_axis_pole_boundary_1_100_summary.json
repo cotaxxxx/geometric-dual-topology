@@ -1,0 +1,49 @@
+{
+  "status": "CERTIFIED",
+  "statement": "Phi(lambda)>0 for 1<=lambda<=100",
+  "definition": "Phi(lambda)=lim_{w->1^-} Psi_lambda(w)",
+  "blocks": 16,
+  "lambda_blocks": [
+    "[1,2]",
+    "[2,3]",
+    "[3,4]",
+    "[4,5]",
+    "[5,6]",
+    "[6,7]",
+    "[7,8]",
+    "[8,9]",
+    "[9,10]",
+    "[10,12]",
+    "[12,16]",
+    "[16,24]",
+    "[24,36]",
+    "[36,52]",
+    "[52,72]",
+    "[72,100]"
+  ],
+  "counts": {
+    "evaluations": 48,
+    "certified_leaves": 32,
+    "terminal_intervals": 0
+  },
+  "conditions": {
+    "all_blocks_certified": true,
+    "exact_lambda_adjacency": true,
+    "combined_endpoints_1_100": true,
+    "exact_rational_coverage_each_block": true,
+    "zero_terminal_intervals": true
+  },
+  "worst_certified_leaf": {
+    "lambda": "[1,9/8]",
+    "strict_lower_endpoint": "0.0086853328086197058499308881284935494330221451543475"
+  },
+  "integrity": {
+    "workflow_run": 30176841736,
+    "workflow_head": "c53930991475c6ef7d37569f0d7b689a22d3555e",
+    "combined_artifact_id": 8624459353,
+    "combined_artifact_sha256": "9a3fd7f21742ecc8201a36726135347d0da5d13826a3adfe7bf2dfd602c546f4",
+    "combined_json_sha256": "96e522fe849b0b35ff6fc91fc92ceff7552ab6e033685d0fc3ffc8a6931075b2",
+    "combiner_script_sha256": "4a7a335c915347ea57836dc6fe7a3a872ca1b0ff058134eb83433eaf333cf9f8"
+  },
+  "scope_limit": "Boundary anchor only; a finite-width pole-cap transfer remains"
+}

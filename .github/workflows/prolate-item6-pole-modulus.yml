@@ -1,0 +1,149 @@
+name: Prolate item 6 pole modulus certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-pole-modulus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install audit and validated arithmetic
+        run: python -m pip install sympy==1.14.0 python-flint==0.9.0
+      - name: Verify pole modulus blow-up formulas
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_pole_modulus_symbolic_audit.py
+      - name: Verify signed-angle endpoint formulas
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_angle_symbolic_audit.py
+      - name: Compile pole modulus drivers
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python -m py_compile
+          prolate_axis_pole_modulus_symbolic_audit.py
+          prolate_axis_signed_angle_symbolic_audit.py
+          prolate_axis_pole_modulus_arb.py
+          prolate_axis_pole_modulus_compact_arb.py
+          prolate_axis_pole_modulus_compact_dfs_arb.py
+          prolate_axis_pole_modulus_endpoint_arb.py
+          prolate_axis_pole_modulus_outer_far_preflight_arb.py
+          prolate_axis_pole_modulus_budgeted_arb.py
+          prolate_axis_pole_modulus_budgeted_dfs_arb.py
+          prolate_axis_pole_modulus_split_dfs_arb.py
+          prolate_axis_pole_modulus_split_relaxed_dfs_arb.py
+      - name: Smoke-test endpoint and junction charts
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from flint import arb, ctx, fmpq
+          import prolate_axis_pole_modulus_endpoint_arb as endpoint
+          import prolate_axis_pole_modulus_split_relaxed_dfs_arb as relaxed
+
+          ctx.dps = 50
+
+          def closed(lo, hi):
+              return arb((lo + hi) / 2, (hi - lo) / 2)
+
+          tests = [
+              (
+                  "endpoint",
+                  endpoint.signed_outer_far_density,
+                  (fmpq(130945, 131072), fmpq(1), fmpq(0), fmpq(1, 65536), fmpq(1), fmpq(17, 16)),
+              ),
+              (
+                  "endpoint",
+                  endpoint.signed_outer_far_density,
+                  (fmpq(65409, 65536), fmpq(1), fmpq(0), fmpq(1, 32768), fmpq(555, 16), fmpq(35)),
+              ),
+              (
+                  "junction",
+                  relaxed.signed_junction_density,
+                  (fmpq(1, 128), fmpq(639, 65536), fmpq(3, 8192), fmpq(7, 16384), fmpq(4435, 64), fmpq(2225, 32)),
+              ),
+              (
+                  "junction",
+                  relaxed.signed_junction_density,
+                  (fmpq(1, 128), fmpq(639, 65536), fmpq(1, 4096), fmpq(5, 16384), fmpq(2465, 32), fmpq(4945, 64)),
+              ),
+          ]
+          records = []
+          failures = 0
+          for chart, evaluator, box in tests:
+              tl, th, ul, uh, ll, lh = box
+              record = {
+                  "chart": chart,
+                  "t": [str(tl), str(th)],
+                  "u": [str(ul), str(uh)],
+                  "lambda": [str(ll), str(lh)],
+              }
+              try:
+                  value = evaluator(closed(tl, th), closed(ul, uh), closed(ll, lh))
+                  text = str(value).lower()
+                  finite = "nan" not in text and "inf" not in text
+                  record.update({
+                      "value": str(value),
+                      "finite": finite,
+                      "imag_contains_zero": bool(0 in value.imag),
+                  })
+                  if not finite or not record["imag_contains_zero"]:
+                      failures += 1
+              except Exception as exc:
+                  record.update({
+                      "finite": False,
+                      "imag_contains_zero": False,
+                      "error": f"{type(exc).__name__}: {exc}",
+                  })
+                  failures += 1
+              records.append(record)
+
+          result = {
+              "status": "PASSED" if failures == 0 else "FAILED",
+              "failure_count": failures,
+              "boxes": records,
+          }
+          Path("prolate_axis_pole_modulus_chart_smoke.json").write_text(
+              json.dumps(result, indent=2), encoding="utf-8"
+          )
+          print(json.dumps(result, indent=2))
+          raise SystemExit(0 if failures == 0 else 1)
+          PY
+      - name: Certify split budget-adaptive pole modulus
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          set +e
+          python prolate_axis_pole_modulus_split_relaxed_dfs_arb.py \
+            --dps 50 \
+            --max-split-depth 24 \
+            --max-boxes 3000000 \
+            --inner-density-limit 100 \
+            --outer-near-density-limit 144100 \
+            --max-terminal-records 100 \
+            --json prolate_axis_pole_modulus_split.json \
+            > prolate_axis_pole_modulus_split.log 2>&1
+          CODE=$?
+          cat prolate_axis_pole_modulus_split.log
+          exit "$CODE"
+      - name: Upload split pole modulus certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-pole-modulus-split
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_angle_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_chart_smoke.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_split.log
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_split.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_modulus_split.json.sha256

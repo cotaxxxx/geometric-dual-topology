@@ -1,0 +1,100 @@
+name: Prolate item 6 mu-scaled tail H slab certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-tail-H-scaled-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tail-H-scaled-block:
+    name: tail-H-scaled-${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - name: center-interior
+            w_lo_num: 1
+            w_lo_den: 20
+            w_hi_num: 1
+            w_hi_den: 4
+          - name: middle-interior
+            w_lo_num: 1
+            w_lo_den: 4
+            w_hi_num: 1
+            w_hi_den: 2
+          - name: outer-interior
+            w_lo_num: 1
+            w_lo_den: 2
+            w_hi_num: 3
+            w_hi_den: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install validated arithmetic
+        run: python -m pip install python-flint==0.9.0
+      - name: Certify scaled tail H block with explicit inner layer
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_tail_H_scaled_block_arb.py
+          --dps 50
+          --tolerance 1e-18
+          --integration-depth 22
+          --eval-limit 200000
+          --max-split-depth 16
+          --max-boxes 32768
+          --mu-lo-num 1
+          --mu-lo-den 200
+          --mu-hi-num 1
+          --mu-hi-den 100
+          --w-lo-num ${{ matrix.w_lo_num }}
+          --w-lo-den ${{ matrix.w_lo_den }}
+          --w-hi-num ${{ matrix.w_hi_num }}
+          --w-hi-den ${{ matrix.w_hi_den }}
+          --json prolate_axis_tail_H_scaled_block_${{ matrix.name }}.json
+      - name: Upload mu-scaled tail H block certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-H-scaled-block-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_block_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_block_${{ matrix.name }}.json.sha256
+
+  combine:
+    name: tail-H-scaled-combine-mu-1-200-1-100
+    needs: tail-H-scaled-block
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download all mu-scaled tail H block certificates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-tail-H-scaled-block-*
+          path: CERTIFICATES/prolate/item6_axis/tail_H_scaled_outputs
+          merge-multiple: true
+      - name: Combine exact adjacent w blocks
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_tail_H_combine.py
+          --pattern "tail_H_scaled_outputs/prolate_axis_tail_H_scaled_block_*.json"
+          --json prolate_axis_tail_H_scaled_combined_mu_1_200_1_100.json
+      - name: Upload combined mu-scaled tail H certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-H-scaled-combined-mu-1-200-1-100
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_combined_mu_1_200_1_100.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_combined_mu_1_200_1_100.json.sha256

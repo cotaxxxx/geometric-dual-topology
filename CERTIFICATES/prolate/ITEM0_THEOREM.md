@@ -47,3 +47,13 @@ open radial interval.
   keeps `rho^2 >= b^2 L_2` visible and prevents four-order overestimation.
 - Replace broad special-function balls by endpoint values plus monotonicity
   whenever derivative signs are available analytically.
+- Permit mixed-label covers: direct `F>0` leaves, `F_r>0` leaves propagating
+  from a left anchor, and `F_r<0` leaves propagating from a right anchor may
+  interleave arbitrarily. The proof obligation is an exact complete cover
+  together with a directed dependency graph in which every transfer leaf is
+  reachable from a certified anchor or direct-positive leaf. Disjointness is
+  not required; compatible certified overlaps are allowed.
+
+The abstract form of these principles, including the mixed-label anchored
+cover theorem, is recorded in
+`01_GENERAL_THEORY/CERTIFICATION_ARCHITECTURE.md`.

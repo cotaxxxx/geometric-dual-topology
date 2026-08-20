@@ -1,0 +1,113 @@
+name: Prolate item 6 pole-boundary anchor certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-pole-boundary-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pole-boundary-block:
+    name: pole-boundary-${{ matrix.lo }}-${{ matrix.hi }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lo: 1
+            hi: 2
+          - lo: 2
+            hi: 3
+          - lo: 3
+            hi: 4
+          - lo: 4
+            hi: 5
+          - lo: 5
+            hi: 6
+          - lo: 6
+            hi: 7
+          - lo: 7
+            hi: 8
+          - lo: 8
+            hi: 9
+          - lo: 9
+            hi: 10
+          - lo: 10
+            hi: 12
+          - lo: 12
+            hi: 16
+          - lo: 16
+            hi: 24
+          - lo: 24
+            hi: 36
+          - lo: 36
+            hi: 52
+          - lo: 52
+            hi: 72
+          - lo: 72
+            hi: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install validated arithmetic
+        run: python -m pip install python-flint==0.9.0
+      - name: Certify pole-boundary lambda block
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_pole_boundary_block_arb.py
+          --dps 50
+          --tolerance 1e-18
+          --integration-depth 22
+          --eval-limit 200000
+          --max-split-depth 12
+          --max-boxes 8192
+          --lambda-lo ${{ matrix.lo }}
+          --lambda-hi ${{ matrix.hi }}
+          --json prolate_axis_pole_boundary_block_${{ matrix.lo }}_${{ matrix.hi }}.json
+      - name: Upload pole-boundary block certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-pole-boundary-block-${{ matrix.lo }}-${{ matrix.hi }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_boundary_block_${{ matrix.lo }}_${{ matrix.hi }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_boundary_block_${{ matrix.lo }}_${{ matrix.hi }}.json.sha256
+
+  combine:
+    name: pole-boundary-combine-1-100
+    needs: pole-boundary-block
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download all pole-boundary block certificates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-pole-boundary-block-*
+          path: CERTIFICATES/prolate/item6_axis/pole_boundary_outputs
+          merge-multiple: true
+      - name: Combine exact adjacent pole-boundary blocks
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_pole_boundary_combine.py
+          --pattern "pole_boundary_outputs/prolate_axis_pole_boundary_block_*.json"
+          --expected-lo 1
+          --expected-hi 100
+          --json prolate_axis_pole_boundary_combined_1_100.json
+      - name: Upload combined pole-boundary certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-pole-boundary-combined-1-100
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_boundary_combined_1_100.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_boundary_combined_1_100.json.sha256

@@ -1,0 +1,42 @@
+{
+  "status": "CERTIFIED",
+  "scope": "Q_parallel(lambda)>0 for 1<=lambda<=10",
+  "conditions": {
+    "all_accepted_leaves_strictly_positive": true,
+    "exact_rational_coverage": true,
+    "zero_terminal_boxes": true
+  },
+  "counts": {
+    "evaluations": 151,
+    "certified_leaves": 80,
+    "terminal_boxes": 0
+  },
+  "worst_certified_leaf": {
+    "lambda_lo": "79/8",
+    "lambda_hi": "10",
+    "split_depth": 3,
+    "Q_parallel_real_lower": "0.48955236624670122276879181945444644042425864613135"
+  },
+  "environment": {
+    "python": "3.13.14",
+    "python_flint": "0.9.0",
+    "flint": "3.6.0"
+  },
+  "settings": {
+    "decimal_precision": 50,
+    "integration_tolerance": "1e-18",
+    "integration_depth_limit": 22,
+    "integration_eval_limit": 200000,
+    "lambda_split_depth_limit": 10,
+    "box_evaluation_limit": 8192
+  },
+  "integrity": {
+    "workflow_run_id": 30159239685,
+    "workflow_artifact_id": 8619781926,
+    "workflow_artifact_sha256": "0b6292035dde9ce11c67b56564ebd9e4d3162e432ed17c94151bbcc0c1f9da23",
+    "full_certificate_json_sha256": "72b6cd989b7b9395f857b1f747d529d4fe640b86eb29fb4222505addb926750a",
+    "driver_script_sha256": "7de166c94c196fec299d78e3286f92fc2b45a2b5872e42c61820839e6d5f08c6"
+  },
+  "full_leaf_certificate_location": "GitHub Actions artifact prolate-item6-center-compact-arb, artifact ID 8619781926",
+  "limitations": "This summary does not replace the full 80-leaf JSON. Item 6 remains uncertified outside the stated compact center-Hessian scope."
+}

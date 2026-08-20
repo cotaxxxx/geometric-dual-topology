@@ -1,0 +1,204 @@
+name: Prolate item 6 direct-Psi tail pilot
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/prolate-item6-tail-Psi-pilot.yml"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_Psi_pilot.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_scaled_block_arb.py"
+      - "CERTIFICATES/prolate/item6_axis/prolate_axis_tail_H_block_arb.py"
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-tail-Psi-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pilot:
+    name: pilot-${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - name: low-w
+            w_lo_num: 1
+            w_lo_den: 20
+            w_hi_num: 1
+            w_hi_den: 8
+          - name: high-w
+            w_lo_num: 5
+            w_lo_den: 8
+            w_hi_num: 3
+            w_hi_den: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install validated arithmetic
+        run: python -m pip install python-flint==0.9.0
+      - name: Compile pilot drivers
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python -m py_compile
+          prolate_axis_tail_H_block_arb.py
+          prolate_axis_tail_H_scaled_block_arb.py
+          prolate_axis_tail_Psi_pilot.py
+      - name: Run 256-box direct-Psi pilot
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          set +e
+          OUT="prolate_axis_tail_Psi_pilot_${{ matrix.name }}.json"
+          python prolate_axis_tail_Psi_pilot.py \
+            --dps 35 \
+            --tolerance 1e-12 \
+            --integration-depth 14 \
+            --eval-limit 25000 \
+            --max-split-depth 12 \
+            --max-boxes 256 \
+            --mu-lo-num 1 \
+            --mu-lo-den 200 \
+            --mu-hi-num 3 \
+            --mu-hi-den 400 \
+            --w-lo-num ${{ matrix.w_lo_num }} \
+            --w-lo-den ${{ matrix.w_lo_den }} \
+            --w-hi-num ${{ matrix.w_hi_num }} \
+            --w-hi-den ${{ matrix.w_hi_den }} \
+            --json "$OUT"
+          CODE=$?
+          echo "pilot_exit_code=$CODE" >> "$GITHUB_ENV"
+          exit 0
+      - name: Summarize contraction and nonfinite counts
+        working-directory: CERTIFICATES/prolate/item6_axis
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          import re
+          from collections import Counter
+          from pathlib import Path
+
+          source = next(Path('.').glob('prolate_axis_tail_Psi_pilot_*.json'))
+          data = json.loads(source.read_text(encoding='utf-8'))
+
+          def number(text):
+              if text == 'nan':
+                  return math.nan
+              match = re.search(r'[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?', text)
+              return float(match.group()) if match else math.nan
+
+          finite = []
+          nonfinite = 0
+          component_nonfinite = Counter()
+          for row in data.get('evaluation_trace', []):
+              total = row.get('total', {})
+              lo = number(total.get('real_lower', 'nan'))
+              hi = number(total.get('real_upper', 'nan'))
+              for name in ('inner', 'paired_bulk', 'paired_cap', 'paired_outer',
+                           'far_bulk', 'far_cap', 'far_left', 'total'):
+                  record = row.get(name, {})
+                  if not math.isfinite(number(record.get('real_lower', 'nan'))):
+                      component_nonfinite[name] += 1
+              if math.isfinite(lo) and math.isfinite(hi):
+                  ml = number(row['mu_lower'])
+                  mh = number(row['mu_upper'])
+                  wl = number(row['w_lower'])
+                  wh = number(row['w_upper'])
+                  finite.append({
+                      'mu_width': mh - ml,
+                      'w_width': wh - wl,
+                      'lower': lo,
+                      'upper': hi,
+                      'midpoint': (lo + hi) / 2,
+                      'radius': (hi - lo) / 2,
+                  })
+              else:
+                  nonfinite += 1
+
+          summary = {
+              'source': source.name,
+              'status': data.get('status'),
+              'scope': data.get('scope'),
+              'counts': data.get('counts'),
+              'partition': data.get('partition'),
+              'trace_records': len(data.get('evaluation_trace', [])),
+              'finite_total_records': len(finite),
+              'nonfinite_total_records': nonfinite,
+              'component_nonfinite_counts': dict(component_nonfinite),
+              'minimum_finite_radius': min((r['radius'] for r in finite), default=None),
+              'minimum_finite_lower': min((r['lower'] for r in finite), default=None),
+              'maximum_finite_lower': max((r['lower'] for r in finite), default=None),
+              'smallest_width_finite_records': sorted(
+                  finite,
+                  key=lambda r: (r['mu_width'] + r['w_width'], r['radius'])
+              )[:20],
+              'terminal_reason_counts': dict(Counter(
+                  box.get('reason', 'missing') for box in data.get('terminal', [])
+              )),
+              'certified_leaf_count': len(data.get('leaves', [])),
+              'worst_certified_leaf': data.get('worst_certified_leaf'),
+              'purpose': (
+                  'Staged 256-box diagnostic for contraction and nonfinite behavior; '
+                  'not a full tail certificate unless the source status is CERTIFIED.'
+              ),
+          }
+          output = source.with_name(source.stem + '_summary.json')
+          output.write_text(json.dumps(summary, indent=2), encoding='utf-8')
+          print(json.dumps(summary, indent=2))
+          PY
+      - name: Upload pilot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-Psi-pilot-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_Psi_pilot_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_Psi_pilot_${{ matrix.name }}.json.sha256
+            CERTIFICATES/prolate/item6_axis/prolate_axis_tail_Psi_pilot_${{ matrix.name }}_summary.json
+          if-no-files-found: warn
+
+  summarize:
+    needs: pilot
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-tail-Psi-pilot-*
+          path: diagnostics
+          merge-multiple: true
+      - name: Combine pilot summaries
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob
+          import json
+          from pathlib import Path
+
+          files = sorted(glob.glob('diagnostics/*_summary.json'))
+          records = [json.loads(Path(path).read_text(encoding='utf-8')) for path in files]
+          combined = {
+              'status': 'COMPLETE_PILOT' if len(records) == 2 else 'INCOMPLETE_PILOT',
+              'expected_records': 2,
+              'received_records': len(records),
+              'records': records,
+          }
+          Path('prolate_axis_tail_Psi_pilot_combined.json').write_text(
+              json.dumps(combined, indent=2), encoding='utf-8'
+          )
+          print(json.dumps(combined, indent=2))
+          if len(records) != 2:
+              raise SystemExit(1)
+          PY
+      - name: Upload combined pilot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-tail-Psi-pilot-combined
+          path: prolate_axis_tail_Psi_pilot_combined.json

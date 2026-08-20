@@ -1,0 +1,124 @@
+name: Prolate item 6 dyadic pole layer certificate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prolate-item6-pole-dyadic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+    steps:
+      - id: build
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+
+          lambda_bands = [
+              (1, 2), (2, 3), (3, 5), (5, 10),
+              (10, 20), (20, 40), (40, 70), (70, 100),
+          ]
+          rows = []
+          for k in range(6, 24):
+              lo_den = 2**k
+              hi_den = 2**(k + 1)
+              for lam_lo, lam_hi in lambda_bands:
+                  rows.append({
+                      "name": f"k{k}-l{lam_lo}-{lam_hi}",
+                      "w_lo_num": lo_den - 1,
+                      "w_lo_den": lo_den,
+                      "w_hi_num": hi_den - 1,
+                      "w_hi_den": hi_den,
+                      "lambda_lo": lam_lo,
+                      "lambda_hi": lam_hi,
+                  })
+          print("matrix=" + json.dumps({"include": rows}, separators=(",", ":")))
+          PY
+
+  pole-block:
+    name: pole-dyadic-${{ matrix.name }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      # Keep runner capacity available for the tail and endpoint certificates.
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install audit and validated arithmetic
+        run: python -m pip install sympy==1.14.0 python-flint==0.9.0
+      - name: Verify independent signed-angle reduction
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: python prolate_axis_signed_angle_symbolic_audit.py
+      - name: Certify regularized dyadic pole rectangle
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_interior_block_arb.py
+          --dps 45
+          --tolerance 1e-16
+          --integration-depth 20
+          --eval-limit 100000
+          --max-split-depth 16
+          --max-boxes 32768
+          --w-lo-num ${{ matrix.w_lo_num }}
+          --w-lo-den ${{ matrix.w_lo_den }}
+          --w-hi-num ${{ matrix.w_hi_num }}
+          --w-hi-den ${{ matrix.w_hi_den }}
+          --lambda-lo ${{ matrix.lambda_lo }}
+          --lambda-hi ${{ matrix.lambda_hi }}
+          --json prolate_axis_pole_dyadic_${{ matrix.name }}.json
+      - name: Upload dyadic pole certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-pole-dyadic-${{ matrix.name }}
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_signed_angle_symbolic_audit.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_dyadic_${{ matrix.name }}.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_dyadic_${{ matrix.name }}.json.sha256
+
+  combine:
+    name: pole-dyadic-combine
+    needs: pole-block
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download all dyadic pole certificates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prolate-item6-pole-dyadic-*
+          path: CERTIFICATES/prolate/item6_axis/pole_dyadic_outputs
+          merge-multiple: true
+      - name: Combine exact dyadic grid
+        working-directory: CERTIFICATES/prolate/item6_axis
+        run: >-
+          python prolate_axis_grid_combine.py
+          --pattern "pole_dyadic_outputs/prolate_axis_pole_dyadic_*.json"
+          --value-key Psi --sign positive
+          --x-lo 63/64 --x-hi 16777215/16777216
+          --y-lo 1 --y-hi 100
+          --expected-blocks 144
+          --json prolate_axis_pole_dyadic_combined_1_100.json
+      - name: Upload combined dyadic pole certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prolate-item6-pole-dyadic-combined
+          path: |
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_dyadic_combined_1_100.json
+            CERTIFICATES/prolate/item6_axis/prolate_axis_pole_dyadic_combined_1_100.json.sha256

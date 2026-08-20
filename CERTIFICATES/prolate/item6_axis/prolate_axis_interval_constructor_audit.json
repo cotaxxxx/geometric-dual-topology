@@ -1,0 +1,59 @@
+{
+  "status": "PASSED",
+  "production_constructor": "arb(rational_midpoint_string, rational_radius_string)",
+  "acceptance_predicate": "constructed box contains both endpoint balls; overlap alone is insufficient",
+  "cases": [
+    {
+      "lo": "1/200",
+      "hi": "3/400",
+      "box": "[+/- 7.51e-3]",
+      "contains_lo": true,
+      "contains_hi": true,
+      "overlaps_lo_diagnostic": true,
+      "overlaps_hi_diagnostic": true,
+      "contains_zero": false
+    },
+    {
+      "lo": "1/20",
+      "hi": "1/8",
+      "box": "[+/- 0.126]",
+      "contains_lo": true,
+      "contains_hi": true,
+      "overlaps_lo_diagnostic": true,
+      "overlaps_hi_diagnostic": true,
+      "contains_zero": false
+    },
+    {
+      "lo": "63/64",
+      "hi": "127/128",
+      "box": "[0.99 +/- 5.63e-3]",
+      "contains_lo": true,
+      "contains_hi": true,
+      "overlaps_lo_diagnostic": true,
+      "overlaps_hi_diagnostic": true,
+      "contains_zero": false
+    },
+    {
+      "lo": "1",
+      "hi": "100",
+      "box": "[+/- 1.01e+2]",
+      "contains_lo": true,
+      "contains_hi": true,
+      "overlaps_lo_diagnostic": true,
+      "overlaps_hi_diagnostic": true,
+      "contains_zero": false
+    },
+    {
+      "lo": "0",
+      "hi": "1/2",
+      "box": "[+/- 0.501]",
+      "contains_lo": true,
+      "contains_hi": true,
+      "overlaps_lo_diagnostic": true,
+      "overlaps_hi_diagnostic": true,
+      "contains_zero": true
+    }
+  ],
+  "legacy_files": [],
+  "conclusion": "PASS requires full endpoint-ball containment for every tested rational interval, zero exclusion for every strictly positive interval, and absence of the historical direct-fmpq constructor from production item-6 sources."
+}

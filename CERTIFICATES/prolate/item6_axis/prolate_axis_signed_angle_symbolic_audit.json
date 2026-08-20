@@ -1,0 +1,29 @@
+{
+  "status": "PASSED",
+  "checks": {
+    "gram_determinant_identity": true,
+    "signed_angle_first_derivative": true,
+    "signed_angle_second_derivative": true,
+    "profile_second_derivative_assembly": true
+  },
+  "domain_certificate": {
+    "driver_enforces_lambda_positive": true,
+    "driver_enforces_0_le_w_lt_1": true,
+    "integration_domain_is_minus1_le_c_le_1": true,
+    "deduction": "Because 0<=w<1 and -1<=c<=1, w*c<=w<1, hence N=1-w*c>0. This is an exact order argument enforced by the Arb driver input checks, not a symbolic polynomial identity."
+  },
+  "formulas": {
+    "N": "-c*w + 1",
+    "signed_cross": "sqrt(1 - c**2)*(-c*(lam - 1/lam) + lam*w)",
+    "r2": "-c**2 + lam**2*(c - w)**2 + 1",
+    "s2": "-c**2 + c**2/lam**2 + 1",
+    "delta": "atan(sqrt(1 - c**2)*(-c*(lam - 1/lam) + lam*w)/(-c*w + 1))",
+    "delta_w": "lam*sqrt(1 - c**2)/(-c**2 + lam**2*(c - w)**2 + 1)",
+    "delta_ww": "2*lam**3*sqrt(1 - c**2)*(c - w)/(-c**2 + lam**2*(c - w)**2 + 1)**2",
+    "Psi_integrand": "-c*D(w)**2/2 + (-c*w + 1)*D(w)*Derivative(D(w), w)",
+    "A_second_integrand": "-2*c*D(w)*Derivative(D(w), w) + (-c*w + 1)*(D(w)*Derivative(D(w), (w, 2)) + Derivative(D(w), w)**2)"
+  },
+  "branch_statement": "For 0<=w<1 and |c|<=1, N=1-w*c>0. Hence delta=atan(X/N) lies in (-pi/2,pi/2), cos(delta)=N/sqrt(N^2+X^2)=C, and acos(C)^2=delta^2.",
+  "conclusion": "The original radial-normal angle square and both axial derivatives can be evaluated using a signed atan and rational-algebraic derivatives, without hypergeometric angle regularization.",
+  "script_sha256": "ba5c78159e0d4c78ac6d6b0e80c9151332844948e0d24f582137b8da3e0a1c27"
+}
